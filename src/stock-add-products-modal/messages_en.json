@@ -1,18 +1,4 @@
 {
-  "stockAddProductsModal.title": "Add Products to Physical Inventory",
-  "stockAddProductsModal.productCode": "Product Code",
-  "stockAddProductsModal.lotCode": "Lot Code",
-  "stockAddProductsModal.expiryDate": "Expiry Date",
-  "stockAddProductsModal.newLotCode": "New Lot Code",
-  "stockAddProductsModal.newLotExpirationDate": "Expiry Date",
-  "stockAddProductsModal.addProduct": "Add Product",
-  "stockAddProductsModal.product": "Product",
-  "stockAddProductsModal.currentStockInDoses": "Current Stock (in Doses)",
-  "stockAddProductsModal.currentStockInPacks": "Current Stock (in Packs)",
-  "stockAddProductsModal.actions": "Actions",
-  "stockAddProductsModal.addProducts": "Add ${num} items to Physical Inventory",
-  "stockAddProductsModal.cancel": "Cancel",
-  "stockAddProductsModal.remove": "Remove",
-  "stockAddProductsModal.required": "This field is required",
-  "stockAddProductsModal.add": "Add"
+  "stockAddProductsModal.lotCode": "Batch",
+  "stockAddProductsModal.newLotCode": "New Batch"
 }

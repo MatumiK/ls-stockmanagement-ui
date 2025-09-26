@@ -1,6 +1,6 @@
 {
   "stockReceive.receive": "Receive",
-  "stockReceive.proceed": "Make Receive",
+  "stockReceive.proceed": "Receive Commodities",
   "stockReceive.program": "Program",
   "stockReceive.action": "Action",
   "stockReceive.title": "Receive for ${facility}",

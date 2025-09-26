@@ -38,6 +38,10 @@
         var repository = new StockEventRepository();
 
         this.search = search;
+        this.getReceivingDiscrepancies = getReceivingDiscrepancies;
+        this.addReceivingDiscrepancies = addReceivingDiscrepancies;
+        this.getDiscrepancy = getDiscrepancy;
+        this.getItemDiscrepancies = getItemDiscrepancies;
 
         this.submitAdjustments = submitAdjustments;
 
@@ -76,24 +80,96 @@
             return result;
         }
 
+        //FROM RECEIVING ADD DISCREPANCY MODAL
+         var receivingDiscrepancies = [];
+        
+        function addReceivingDiscrepancies (discrepancies) {
+ 
+            receivingDiscrepancies.push(discrepancies);
+        }
+        
+        //get discrepancies for view 
+        function getReceivingDiscrepancies () {
+
+            return receivingDiscrepancies;
+        }
+
+        function getDiscrepancy(timestamp){
+           
+            // Search for objects in discrepanciesArray with a matching timeStamp
+            var itemDiscrepancies = receivingDiscrepancies.filter(discrepancy => discrepancy.timestamp === timestamp);
+            return itemDiscrepancies;
+
+        }
+
+        function getItemDiscrepancies(timestamp){
+           
+            var itemDiscrepancies = [];
+
+             // Search for objects with a matching timeStamp in receivingDiscrepancies array
+            receivingDiscrepancies.forEach((discrepancy) => {
+                
+                if(discrepancy.timestamp === timestamp){
+                    itemDiscrepancies.push(discrepancy);
+                }
+            });
+            return itemDiscrepancies;
+        }
+
         function submitAdjustments(programId, facilityId, lineItems, adjustmentType) {
             var event = {
                 programId: programId,
                 facilityId: facilityId
             };
-            event.lineItems = _.map(lineItems, function(item) {
-                return angular.merge({
-                    orderableId: item.orderable.id,
-                    lotId: item.lot ? item.lot.id : null,
-                    quantity: item.quantity,
-                    extraData: {
-                        vvmStatus: item.vvmStatus
-                    },
-                    occurredDate: item.occurredDate,
-                    reasonId: item.reason ? item.reason.id : null,
-                    reasonFreeText: item.reasonFreeText
-                }, buildSourceDestinationInfo(item, adjustmentType));
-            });
+           
+            if(adjustmentType.state == 'receive'){
+                //Set Reason as transfer in for all recieving transactions
+                event.lineItems = _.map(lineItems, function(item) {
+                    return angular.merge({
+                        orderableId: item.orderable.id,
+                        lotId: item.lot ? item.lot.id : null,
+                        deliveryNoteQuantity: item.deliveryNoteQuantity,
+                        shippedQuantity: item.rejectedQuantity? (item.quantity + item.rejectedQuantity): item.quantity,
+                        quantity: item.quantity,
+                        rejectedQuantity: item.rejectedQuantity,
+                        extraData: {
+                            vvmStatus: item.vvmStatus
+                        },
+                        occurredDate: item.occurredDate,
+                        reasonId: item.reason ? item.reason.id : null, 
+                        reasonFreeText: item.reasonFreeText,
+                        invoiceNumber: item.invoiceNumber,
+                        cartonNumber: item.cartonNumber,
+                        referenceNumber: item.referenceNumber,
+                        unitPrice: item.unitPrice,
+                        selectedDiscrepancy: item.selectedDiscrepancy,
+                        discrepancies: getItemDiscrepancies(item.timestamp)
+                    }, buildSourceDestinationInfo(item, adjustmentType));
+                });
+            }
+            else{
+                event.lineItems = _.map(lineItems, function(item) {
+                    return angular.merge({
+                        orderableId: item.orderable.id,
+                        lotId: item.lot ? item.lot.id : null,
+                        deliveryNoteQuantity: item.deliveryNoteQuantity,
+                        shippedQuantity: item.rejectedQuantity? (item.quantity + item.rejectedQuantity): item.quantity,
+                        quantity: item.quantity,
+                        rejectedQuantity: item.rejectedQuantity,
+                        extraData: {
+                            vvmStatus: item.vvmStatus
+                        },
+                        occurredDate: item.occurredDate,
+                        reasonId: item.reason ? item.reason.id : null, 
+                        reasonFreeText: item.reasonFreeText,
+                        invoiceNumber: item.invoiceNumber,
+                        referenceNumber: item.referenceNumber,
+                        unitPrice: item.unitPrice,
+                        selectedDiscrepancy: item.selectedDiscrepancy
+                    }, buildSourceDestinationInfo(item, adjustmentType));
+                });
+
+            }
             return repository.create(event)
                 .then(function() {
                     $rootScope.$emit('openlmis-referencedata.offline-events-indicator');

@@ -82,8 +82,14 @@
                 srcDstAssignments: function() {
                     return undefined;
                 },
+                suppliers: function(){
+                    return undefined;
+                },
                 hasPermissionToAddNewLot: function() {
                     return false;
+                },
+                ReferenceNumbers:function() {
+                    return undefined;
                 }
             }
         });

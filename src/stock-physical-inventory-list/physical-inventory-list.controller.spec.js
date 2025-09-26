@@ -16,12 +16,7 @@
 describe('PhysicalInventoryListController', function() {
 
     beforeEach(function() {
-        module('stock-physical-inventory-list', function($provide) {
-            $provide.value('featureFlagService', {
-                set: function() {},
-                get: function() {}
-            });
-        });
+        module('stock-physical-inventory-list');
 
         inject(function($injector) {
             this.$controller = $injector.get('$controller');

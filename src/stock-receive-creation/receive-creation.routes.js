@@ -78,13 +78,28 @@
                 },
                 adjustmentType: function() {
                     return ADJUSTMENT_TYPE.RECEIVE;
-                },
+                }, 
                 srcDstAssignments: function($stateParams, facility, sourceDestinationService) {
                     if (_.isUndefined($stateParams.srcDstAssignments)) {
                         $stateParams.srcDstAssignments = sourceDestinationService
                             .getSourceAssignments($stateParams.programId, facility.id);
                     }
                     return $stateParams.srcDstAssignments;
+                },
+                suppliers: function(facilityService){
+                    var paginationParams = {};
+                    var queryParams = {
+                        "type": "warehouse"                       
+                    };
+                    return facilityService.query(paginationParams, queryParams)
+                        .then(function (result) {
+                            return result.content;
+                        })
+                        .catch(function (error) {
+                            // Handle any errors that may occur during the query
+                            console.error("Error:", error);
+                            return [];
+                        });
                 },
                 hasPermissionToAddNewLot: function(permissionService, ADMINISTRATION_RIGHTS, user) {
                     return permissionService.hasPermissionWithAnyProgramAndAnyFacility(user.user_id, {
@@ -95,6 +110,23 @@
                         })
                         .catch(function() {
                             return false;
+                        });
+                },
+                ReferenceNumbers: function (pointOfDeliveryService, facility) {
+                    return pointOfDeliveryService.getPODs(facility.id)
+                        .then(function (result) {
+                            let references = [];
+                            let currentDate = new Date();
+                            let activePeriod = new Date(currentDate.getTime() - (14 * 24 * 60 * 60 * 1000));
+                            Object.values(result).forEach(function (record) {
+                                let receivingDate = new Date(record.receivingDate);
+                                if (receivingDate >= activePeriod) {
+                                    //console.log('>>>>> - ',record);
+                                    references.push(record);
+                                    //references.push(record.referenceNumber);
+                                }
+                            });
+                           return references;
                         });
                 }
             }

@@ -79,7 +79,8 @@
         };
 
         function shouldConfirmTransition(transitionStateName, toState, isConfirmQuit) {
-            var isPreventedState = toState.name !== 'auth.login' && toState.name !== transitionStateName;
+            // Allow discarding changes and changing prepack program selection with prompting for confirmation
+            var isPreventedState = toState.name !== 'auth.login' && toState.name !== transitionStateName && toState.name !== 'openlmis.stockmanagement.prepack';
             return toState.name !== $state.current.name && !isConfirmQuit && isPreventedState;
         }
     }

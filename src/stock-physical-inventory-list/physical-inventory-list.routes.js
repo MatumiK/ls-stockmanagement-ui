@@ -47,7 +47,7 @@
                 programs: function(user, stockProgramUtilService) {
                     return stockProgramUtilService.getPrograms(user.user_id, STOCKMANAGEMENT_RIGHTS.INVENTORIES_EDIT);
                 },
-                drafts: function(physicalInventoryFactory, programs, facility) {
+                draftsForMajor: function(physicalInventoryFactory, programs, facility) {
                     if (_.isUndefined(facility)) {
                         return [];
                     }
@@ -56,6 +56,20 @@
                     });
 
                     return physicalInventoryFactory.getDrafts(programIds, facility.id);
+                },
+                draftsForCyclic: function(physicalInventoryFactory, programs, facility) {
+                    if (_.isUndefined(facility)) {
+                        return [];
+                    }
+                    var programIds = _.map(programs, function(program) {
+                        return program.id;
+                    });
+
+                    return physicalInventoryFactory.getDraftsForCyclic(programIds, facility.id);
+                },
+                drafts: function (draftsForCyclic,draftsForMajor) {
+                    //Return all drafts is single array of arrays. 
+                    return [draftsForMajor, draftsForCyclic]
                 }
             }
         });

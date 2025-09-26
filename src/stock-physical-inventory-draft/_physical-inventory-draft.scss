@@ -1,10 +1,10 @@
 .physical-inventory-draft-progress {
-  @include margin-left(0);
+  margin-left: 0;
 }
 
 .reasons-cell {
 
-  @include padding-right(0.5em);
+  padding-right: 0.5em !important;
 
     &:before {
         content: '' !important;
@@ -13,6 +13,6 @@
 
 .draft-indicator {
   display: block;
-  @include float(right);
+  float: right;
   margin-top: 1em;
 }

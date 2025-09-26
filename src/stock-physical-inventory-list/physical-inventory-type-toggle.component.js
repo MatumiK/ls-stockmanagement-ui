@@ -14,9 +14,24 @@
  */
 
 (function() {
+
     'use strict';
 
-    angular.module('stock-confirm-discard', [
-        'openlmis-modal'
-    ]);
+    /**
+     * @ngdoc service
+     * @name physical-inventory-type-toggle.component:physicalInventoryTypeToggle
+     *
+     * @description
+     * The Physical Inventory Type Toggle component.
+     */
+    angular
+        .module('stock-physical-inventory-list')
+        .component('physicalInventoryTypeToggle', {
+            controller: 'physicalInventoryTypeToggleController',
+            controllerAs: 'vm',
+            templateUrl: 'stock-physical-inventory-list/physical-inventory-type-toggle.html',
+            bindings: {
+                physicalInventoryType: '='
+            }
+        });
 })();

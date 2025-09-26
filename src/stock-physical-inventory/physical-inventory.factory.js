@@ -38,8 +38,10 @@
 
         return {
             getDrafts: getDrafts,
+            getDraftsForCyclic: getDraftsForCyclic,
             getDraft: getDraft,
             getDraftByProgramAndFacility: getDraftByProgramAndFacility,
+            getDraftByProgramAndFacility: getDraftByProgramAndFacilityForCyclic,
             getPhysicalInventory: getPhysicalInventory,
             saveDraft: saveDraft
         };
@@ -69,6 +71,57 @@
                     });
                 });
         }
+
+        /**
+         * @ngdoc method
+         * @methodOf stock-physical-inventory.physicalInventoryFactory
+         * @name getDrafts
+         *
+         * @description
+         * Retrieves physical inventory drafts by facility and program.
+         *
+         * @param  {Array}   programIds An array of program UUID
+         * @param  {String}  facility   Facility UUID
+         * @return {Promise}            Physical inventories promise
+         */
+        function getDraftsForCyclic(programIds, facility) {
+            var promises = [];
+            angular.forEach(programIds, function(program) {
+                promises.push(getDraftByProgramAndFacilityForCyclic(program, facility));
+            });
+
+            return $q.all(promises)
+                .then(function(reponse) {
+                    return reponse.filter(function(draft) {
+                        return draft !== undefined;
+                    });
+                });
+        }
+
+        /**
+         * @ngdoc method
+         * @methodOf stock-physical-inventory.physicalInventoryFactory
+         * @name getDraftByProgramAndFacility
+         *
+         * @description
+         * Retrieves simple physical inventory draft by facility and program.
+         *
+         * @param  {String}  programId  Program UUID
+         * @param  {String}  facilityId Facility UUID
+         * @return {Promise}          Physical inventory promise
+         */
+        function getDraftByProgramAndFacilityForCyclic(programId, facilityId) {
+            var draftToReturn = {
+                            programId: programId,
+                            facilityId: facilityId,
+                            isStarter: true,
+                            lineItems: []
+                        };
+            return draftToReturn;
+                
+        }
+
+
 
         /**
          * @ngdoc method
@@ -217,14 +270,10 @@
         function prepareLineItems(physicalInventory, summaries, draftToReturn) {
             var quantities = {},
                 extraData = {};
-            var newLineItems = [];
 
             angular.forEach(physicalInventory.lineItems, function(lineItem) {
                 quantities[identityOf(lineItem)] = lineItem.quantity;
                 extraData[identityOf(lineItem)] = getExtraData(lineItem);
-                if (lineItem.$isNewItem) {
-                    newLineItems.push(lineItem);
-                }
             });
 
             angular.forEach(summaries, function(summary) {
@@ -239,10 +288,6 @@
                     stockAdjustments: getStockAdjustments(physicalInventory.lineItems, summary,
                         physicalInventory.$modified)
                 });
-            });
-
-            angular.forEach(newLineItems, function(newLineItem) {
-                draftToReturn.lineItems.push(newLineItem);
             });
         }
 

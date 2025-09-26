@@ -45,6 +45,10 @@
             KIT_UNPACK: {
                 prefix: 'stockUnpackKit',
                 state: 'kitunpack'
+            },
+            PREPACK: {
+                prefix: 'stockPrepack',
+                state: 'prepack'
             }
         };
     }

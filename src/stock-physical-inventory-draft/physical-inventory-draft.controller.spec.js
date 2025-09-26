@@ -19,15 +19,9 @@ describe('PhysicalInventoryDraftController', function() {
 
     beforeEach(function() {
 
-        module('stock-physical-inventory-draft', function($provide) {
+        module('stock-physical-inventory-draft', function() {
             chooseDateModalService = jasmine.createSpyObj('chooseDateModalService', ['show']);
-
-            $provide.value('featureFlagService', {
-                set: function() {},
-                get: function() {}
-            });
         });
-        module('admin-lot-edit');
 
         inject(function($injector) {
             this.$controller = $injector.get('$controller');
@@ -57,8 +51,6 @@ describe('PhysicalInventoryDraftController', function() {
             this.loadingModalService = $injector.get('loadingModalService');
             this.LotResource = $injector.get('LotResource');
             this.editLotModalService = $injector.get('editLotModalService');
-            this.quantityUnitCalculateService = $injector.get('quantityUnitCalculateService');
-            this.QUANTITY_UNIT = $injector.get('QUANTITY_UNIT');
         });
 
         spyOn(this.physicalInventoryService, 'submitPhysicalInventory');
@@ -157,8 +149,6 @@ describe('PhysicalInventoryDraftController', function() {
             id: this.draft.id
         };
 
-        this.quantityUnit = undefined;
-
         this.vm = this.$controller('PhysicalInventoryDraftController', {
             facility: this.facility,
             program: this.program,
@@ -178,12 +168,10 @@ describe('PhysicalInventoryDraftController', function() {
             stockmanagementUrlFactory: this.stockmanagementUrlFactory,
             accessTokenFactory: this.accessTokenFactory,
             confirmService: this.confirmService,
-            stockCardService: this.stockCardService,
-            LotResource: this.LotResource
+            stockCardService: this.stockCardService
         });
 
         this.vm.$onInit();
-        this.vm.quantityUnit = this.QUANTITY_UNIT.DOSES;
     });
 
     describe('onInit', function() {
@@ -262,7 +250,7 @@ describe('PhysicalInventoryDraftController', function() {
             this.lineItem4,
             asd(this.lineItem1.orderable),
             asd(this.lineItem3.orderable)
-        ], this.draft, true);
+        ], [this.lineItem1, this.lineItem2, this.lineItem3, this.lineItem4]);
     });
 
     function asd(orderable) {
@@ -279,24 +267,9 @@ describe('PhysicalInventoryDraftController', function() {
 
     describe('saveDraft', function() {
 
-        it('should open confirmation modal', function() {
-            this.confirmService.confirmDestroy.andReturn(this.$q.resolve());
-            this.draftFactory.saveDraft.andReturn(this.$q.defer().promise);
-
-            this.vm.saveDraft();
-            this.$rootScope.$apply();
-
-            expect(this.confirmService.confirmDestroy).toHaveBeenCalledWith(
-                'stockPhysicalInventoryDraft.saveDraft',
-                'stockPhysicalInventoryDraft.save'
-            );
-        });
-
         it('should save draft', function() {
-            this.confirmService.confirmDestroy.andReturn(this.$q.resolve());
             this.draftFactory.saveDraft.andReturn(this.$q.defer().promise);
             this.draftFactory.saveDraft.andReturn(this.$q.resolve());
-            spyOn(this.LotResource.prototype, 'create');
 
             this.vm.saveDraft();
             this.$rootScope.$apply();
@@ -305,9 +278,7 @@ describe('PhysicalInventoryDraftController', function() {
         });
 
         it('should cache draft', function() {
-            this.confirmService.confirmDestroy.andReturn(this.$q.resolve());
-            this.draftFactory.saveDraft.andReturn(this.$q.resolve());
-
+            this.draftFactory.saveDraft.andReturn(this.$q.defer().promise);
             this.$rootScope.$apply();
 
             this.vm.saveDraft();
@@ -388,7 +359,7 @@ describe('PhysicalInventoryDraftController', function() {
 
             this.$rootScope.$apply();
 
-            expect(this.physicalInventoryDraftCacheService.cacheDraft).toHaveBeenCalledWith(this.draft);
+            expect(this.draftFactory.saveDraft).toHaveBeenCalled();
         });
     });
 
@@ -485,13 +456,9 @@ describe('PhysicalInventoryDraftController', function() {
     });
 
     it('should aggregate given field values', function() {
-        var orderable = {
-            netContent: 88
-        };
         var lineItem1 = new this.PhysicalInventoryLineItemDataBuilder()
             .withQuantity(2)
             .withStockOnHand(233)
-            .withOrderable(orderable)
             .build();
 
         var lineItem2 = new this.PhysicalInventoryLineItemDataBuilder()

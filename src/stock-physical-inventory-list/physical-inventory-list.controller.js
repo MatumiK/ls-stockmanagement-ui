@@ -29,10 +29,10 @@
         .controller('PhysicalInventoryListController', controller);
 
     controller.$inject = ['facility', 'programs', 'drafts', 'messageService', '$state', 'physicalInventoryService',
-        'FunctionDecorator', 'offlineService', '$q', '$scope', '$stateParams'];
+        'FunctionDecorator', 'offlineService', '$q', '$scope', '$stateParams','draftsForCyclic'];
 
     function controller(facility, programs, drafts, messageService, $state, physicalInventoryService,
-                        FunctionDecorator, offlineService, $q, $scope, $stateParams) {
+                        FunctionDecorator, offlineService, $q, $scope, $stateParams,draftsForCyclic) {
         var vm = this;
         vm.$onInit = onInit;
 
@@ -52,6 +52,17 @@
         /**
          * @ngdoc property
          * @propertyOf stock-physical-inventory-list.controller:PhysicalInventoryListController
+         * @name physicalInventoryType
+         * @type {Object}
+         *
+         * @description
+         * Holds Physical Inventory Type.
+         */
+        vm.physicalInventoryType = undefined;
+
+        /**
+         * @ngdoc property
+         * @propertyOf stock-physical-inventory-list.controller:PhysicalInventoryListController
          * @name programs
          * @type {Array}
          *
@@ -60,7 +71,7 @@
          */
         vm.programs = programs;
 
-        vm.drafts = drafts;
+        vm.drafts = (vm.physicalInventoryType === "Major") ? drafts : draftsForCyclic;
         vm.editDraft = new FunctionDecorator()
             .decorateFunction(editDraft)
             .withLoading(true)
@@ -100,6 +111,10 @@
 
         };
 
+        vm.onChangePhysicalInventoryType = function(){
+            vm.drafts = (vm.physicalInventoryType === "Major") ? drafts[0] : drafts[1];
+        }
+
         /**
          * @ngdoc method
          * @propertyOf stock-physical-inventory-list.controller:PhysicalInventoryListController
@@ -126,7 +141,8 @@
                     id: draft.id,
                     program: program,
                     facility: facility,
-                    includeInactive: false
+                    includeInactive: false,
+                    physicalInventoryType : vm.physicalInventoryType
                 });
                 return $q.resolve();
             }
@@ -136,7 +152,8 @@
                     id: draft.id,
                     program: program,
                     facility: facility,
-                    includeInactive: false
+                    includeInactive: false,
+                    physicalInventoryType : vm.physicalInventoryType
                 });
             });
         }

@@ -150,7 +150,7 @@
             });
 
             if (!_.isEmpty(keyword)) {
-                keyword = keyword.trim();
+                keyword = keyword.trim().toLowerCase();
                 result = _.filter(lineItems, function(item) {
                     var hasStockOnHand = !(_.isNull(item.stockOnHand) || _.isUndefined(item.stockOnHand));
                     var hasQuantity = !(_.isNull(item.quantity) || _.isUndefined(item.quantity)) &&
@@ -163,15 +163,13 @@
                         getLot(item, hasLot),
                         item.lot ? openlmisDateFilter(item.lot.expirationDate) : ''
                     ];
-                    return _.any(searchableFields, function(field) {
-                        return field.toLowerCase().contains(keyword.toLowerCase());
-                    });
+                    return searchableFields.some(field => field && field.toLowerCase().includes(keyword));
                 });
             }
 
             if (!includeInactive) {
                 result = _.filter(result, function(item) {
-                    return item.active || item.stockOnHand !== 0;
+                    return item.active;
                 });
             }
 
@@ -226,9 +224,9 @@
          * @param  {Object} physicalInventory Draft that will be saved
          * @return {Promise}                  Submitted Physical Inventory
          */
-        function submit(physicalInventory) {
+        function submit(physicalInventory, physicalInventoryType) {
             try {
-                var event = stockEventFactory.createFromPhysicalInventory(physicalInventory);
+                var event = stockEventFactory.createFromPhysicalInventory(physicalInventory, physicalInventoryType);
             } catch (error) {
                 return getDraft(physicalInventory.programId, physicalInventory.facilityId);
             }

@@ -29,6 +29,9 @@
         'referencedata-lot',
         'stock-unpack-kit',
         'stock-reasons-modal',
-        'stock-edit-lot-modal'
+        'stock-edit-lot-modal',
+        'receiving-add-discrepancy-modal',
+        'complaint-form-modal',
+        'openlmis-currency'
     ]);
 })();

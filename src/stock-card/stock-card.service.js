@@ -28,12 +28,9 @@
         .module('stock-card')
         .service('stockCardService', service);
 
-    service.$inject = ['$resource', '$window', 'stockmanagementUrlFactory', 'accessTokenFactory', 'dateUtils',
-        'StockCardResource', '$q', 'offlineService'];
+    service.$inject = ['$resource', '$window', 'stockmanagementUrlFactory', 'accessTokenFactory', 'dateUtils'];
 
-    function service($resource, $window, stockmanagementUrlFactory, accessTokenFactory, dateUtils,
-                     StockCardResource, $q, offlineService) {
-        var stockCardResource = new StockCardResource();
+    function service($resource, $window, stockmanagementUrlFactory, accessTokenFactory, dateUtils) {
         var resource = $resource(stockmanagementUrlFactory('/api/stockCards/:stockCardId'), {}, {
             get: {
                 method: 'GET',
@@ -61,13 +58,9 @@
          * @return {Promise} stock card promise.
          */
         function getStockCard(stockCardId) {
-            return stockCardResource.get(stockCardId)
-                .then(function(stockCard) {
-                    if (!stockCard && offlineService.isOffline()) {
-                        throw new Error('stockCard.notCached.error');
-                    }
-                    return $q.resolve(stockCard);
-                });
+            return resource.get({
+                stockCardId: stockCardId
+            }).$promise;
         }
 
         /**

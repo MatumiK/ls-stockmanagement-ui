@@ -20,9 +20,9 @@
         .module('stock-issue-creation')
         .config(routes);
 
-    routes.$inject = ['$stateProvider', 'STOCKMANAGEMENT_RIGHTS', 'SEARCH_OPTIONS', 'ADJUSTMENT_TYPE', 'moment'];
+    routes.$inject = ['$stateProvider', 'STOCKMANAGEMENT_RIGHTS', 'SEARCH_OPTIONS', 'ADJUSTMENT_TYPE'];
 
-    function routes($stateProvider, STOCKMANAGEMENT_RIGHTS, SEARCH_OPTIONS, ADJUSTMENT_TYPE, moment) {
+    function routes($stateProvider, STOCKMANAGEMENT_RIGHTS, SEARCH_OPTIONS, ADJUSTMENT_TYPE) {
         $stateProvider.state('openlmis.stockmanagement.issue.creation', {
             isOffline: true,
             url: '/:programId/create?page&size&keyword',
@@ -63,22 +63,9 @@
                 orderableGroups: function($stateParams, program, facility, existingStockOrderableGroupsFactory) {
                     if (!$stateParams.orderableGroups) {
                         $stateParams.orderableGroups = existingStockOrderableGroupsFactory
-                            .getGroupsWithNotZeroSoh($stateParams, program, facility)
-                            .then(function(orderableGroups) {
-                                var currentDate = moment(new Date()).format('YYYY-MM-DD');
-                                var filteredGroups = [];
-                                orderableGroups.forEach(function(orderableGroup) {
-                                    var group = orderableGroup.filter(function(orderable) {
-                                        return orderable.lot === null ||
-                                            moment(orderable.lot.expirationDate).format('YYYY-MM-DD') >= currentDate;
-                                    });
-                                    if (group.length !== 0) {
-                                        filteredGroups.push(group);
-                                    }
-                                });
-                                return filteredGroups;
-                            });
+                            .getGroupsWithNotZeroSoh($stateParams, program, facility);
                     }
+
                     return $stateParams.orderableGroups;
                 },
                 displayItems: function($stateParams, registerDisplayItemsService) {
@@ -92,14 +79,33 @@
                 },
                 adjustmentType: function() {
                     return ADJUSTMENT_TYPE.ISSUE;
-                },
-                srcDstAssignments: function($stateParams, facility, sourceDestinationService) {
+                },         
+                srcDstAssignments:function($stateParams, facility, sourceDestinationService) {
                     if (_.isUndefined($stateParams.srcDstAssignments)) {
                         return sourceDestinationService.getDestinationAssignments(
                             $stateParams.programId, facility.id
                         );
                     }
+                    console.log("Issue Creation Routes");
                     return $stateParams.srcDstAssignments;
+                },
+                suppliers: function(facilityService){
+                    var paginationParams = {};
+                    var queryParams = {
+                        "type": "warehouse"                       
+                    };
+                    return facilityService.query(paginationParams, queryParams)
+                        .then(function (result) {
+                            return result.content;
+                        })
+                        .catch(function (error) {
+                            // Handle any errors that may occur during the query
+                            console.error("Error:", error);
+                            return [];
+                        });
+                },
+                ReferenceNumbers:function() {
+                    return undefined;
                 },
                 hasPermissionToAddNewLot: function() {
                     return false;

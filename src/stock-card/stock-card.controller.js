@@ -28,45 +28,15 @@
         .module('stock-card')
         .controller('StockCardController', controller);
 
-    controller.$inject = ['stockCard', '$state', 'stockCardService', 'REASON_TYPES', 'messageService',
-        'QUANTITY_UNIT', 'quantityUnitCalculateService'];
+    controller.$inject = ['stockCard', '$state', 'stockCardService', 'REASON_TYPES', 'messageService'];
 
-    function controller(stockCard, $state, stockCardService, REASON_TYPES, messageService, QUANTITY_UNIT,
-                        quantityUnitCalculateService) {
-
+    function controller(stockCard, $state, stockCardService, REASON_TYPES, messageService) {
         var vm = this;
 
         vm.$onInit = onInit;
         vm.getReason = getReason;
         vm.stockCard = [];
         vm.displayedLineItems = [];
-        vm.showInDoses = showInDoses;
-        vm.recalculateQuantity = recalculateQuantity;
-
-        /**
-         * @ngdoc property
-         * @propertyOf stock-card.controller:StockCardController
-         * @name quantityUnit
-         * @type {Object}
-         *
-         * @description
-         * Holds quantity unit.
-         */
-        vm.quantityUnit = undefined;
-
-        /**
-         * @ngdoc method
-         * @methodOf stock-card.controller:StockCardController
-         * @name showInDoses
-         *
-         * @description
-         * Returns whether the screen is showing quantities in doses.
-         *
-         * @return {boolean} true if the quantities are in doses, false otherwise
-         */
-        function showInDoses() {
-            return vm.quantityUnit === QUANTITY_UNIT.DOSES;
-        }
 
         /**
          * @ngdoc method
@@ -113,7 +83,6 @@
                 return -adjustment.quantity;
             }
             return adjustment.quantity;
-
         }
 
         /**
@@ -137,23 +106,6 @@
             return lineItem.reason.isPhysicalReason()
                 ? messageService.get('stockCard.physicalInventory')
                 : lineItem.reason.name;
-        }
-
-        /**
-         * @ngdoc method
-         * @methodOf stock-card.controller:StockCardController
-         * @name recalculateQuantity
-         *
-         * @description
-         * Recalculates the given quantity to packs or doses
-         *
-         * @param  {number}  quantity  the quantity in doses to be recalculated
-         * 
-         * @return {String}            the given quantity in Doses or Packs
-         */
-        function recalculateQuantity(quantity) {
-            return quantityUnitCalculateService
-                .recalculateSOHQuantity(quantity, vm.stockCard.orderable.netContent, vm.showInDoses());
         }
 
     }

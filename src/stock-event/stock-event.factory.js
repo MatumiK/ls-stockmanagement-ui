@@ -47,13 +47,19 @@
          * @param  {Object}  physicalInventory   the physical Inventory
          * @return {StockEvent}                  the new instance of stock event
          */
-        function createFromPhysicalInventory(physicalInventory) {
+        function createFromPhysicalInventory(physicalInventory, physicalInventoryType ) {
+           // console.log(physicalInventory)
+           if(physicalInventoryType === "Cyclic"){
+            physicalInventory.lineItems = physicalInventory.lineItems.filter(item => item.quantity >= 0)
+           }
+
             var physicalInventoryCopy = angular.copy(physicalInventory);
             physicalInventoryCopy.lineItems = physicalInventory.lineItems
                 .filter(function(item) {
                     return item.isAdded;
                 })
                 .map(function(item) {
+                    
                     var stockAdjustments = [];
 
                     if (item.stockAdjustments) {
@@ -66,17 +72,19 @@
                         item.quantity = 0;
                     }
 
-                    if ((!item.quantity && item.quantity !== 0) && item.active === true) {
+                    if ((!item.quantity && item.quantity !== 0) && item.active === true && physicalInventoryType === "Major") {
                         throw 'stockPhysicalInventoryDraft.submitInvalidActive';
                     }
                     return new StockEventLineItem(
                         item.orderable.id, item.lot ? item.lot.id : null,
                         item.quantity, physicalInventory.occurredDate,
                         {
-                            vvmStatus: item.vvmStatus
+                            vvmStatus: item.vvmStatus,
+                            physicalInventoryType: physicalInventoryType
                         }, stockAdjustments
                     );
                 });
+            console.log(physicalInventoryCopy.lineItems)
 
             return new StockEvent(physicalInventoryCopy);
         }

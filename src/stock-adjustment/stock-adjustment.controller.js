@@ -76,10 +76,10 @@
 
         vm.proceed = function(program) {
             $state.go('openlmis.stockmanagement.' + adjustmentType.state + '.creation', {
-                programId: program.id,
-                program: program,
-                facility: facility
-            });
+                        programId: program.id,
+                        program: program,
+                        facility: facility
+                    });
         };
 
         /**

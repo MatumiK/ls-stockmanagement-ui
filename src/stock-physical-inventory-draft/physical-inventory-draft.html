@@ -22,14 +22,21 @@
     </form>
 
     <openlmis-progressbar class="physical-inventory-draft-progress"
+        ng-if="vm.stateParams.physicalInventoryType === 'Major'"
         value="vm.itemsWithQuantity.length" max="vm.displayLineItemsGroup.length"
         title="{{'stockPhysicalInventoryDraft.numberOfProductsComplete' | message: {'num': vm.itemsWithQuantity.length, 'total': vm.displayLineItemsGroup.length} }}">
     </openlmis-progressbar>
-    <quantity-unit-toggle class="is-primary" quantity-unit="vm.quantityUnit"></quantity-unit-toggle>
 
-    <button class="pull-right add" ng-click="vm.addProducts()">
+    <button ng-if="vm.stateParams.physicalInventoryType === 'Major'" class="pull-right add" ng-click="vm.addProducts()">
         {{'stockPhysicalInventoryDraft.addProduct' | message}}
     </button>
+    <div ng-if="vm.stateParams.physicalInventoryType === 'Cyclic'" class="pull-right add">
+        <label for="productSelect">{{'Select Product'}}</label>
+        <select  id="productSelect" ng-model="vm.selectedProductForCyclic"
+            ng-options="product.orderable.fullProductName for product in vm.productsForCyclic" ng-required="true">
+        </select>
+            <button ng-click="vm.selectProductForCyclic()"> {{'stockPhysicalInventoryDraft.addProduct' | message}}  </button>
+    </div>
 
     <saving-indicator class="draft-indicator" object="vm.dataChanged"/>
 
@@ -54,7 +61,7 @@
                 <th ng-if="vm.showHideButtonColumn" >{{'stockPhysicalInventoryDraft.actions' | message}}</th>
             </tr>
         </thead>
-        <tbody ng-repeat="(category, groupedLineItems) in vm.groupedCategories"  tbody-title="{{category}}">
+        <tbody ng-repeat="(category, groupedLineItems) in vm.groupedCategories track by category"  tbody-title="{{category}}">
            <tr ng-if="lineItems.length > 1" ng-repeat-start="lineItems in groupedLineItems">
                 <td>{{lineItems[0].orderable.productCode}}</td>
                 <td>{{lineItems[0].orderable | productName}}</td>
@@ -78,15 +85,16 @@
                 <td ng-if="!vm.canEditLot(lineItem)">
                     {{lineItem.displayLotMessage}}
                 </td>
-                <td>{{vm.formatDate(lineItem.lot.expirationDate) | message}}</td>
-                <td align="right">{{vm.recalculateQuantity(lineItem.stockOnHand, lineItem.orderable.netContent)}}</td>
-                <td class="digit-cell" openlmis-invalid="{{lineItem.quantityInvalid ? lineItem.quantityInvalid : ''}}">
-                    <openlmis-quantity-unit-input 
-                        show-in-doses="vm.showInDoses()" 
-                        item="lineItem"
-                        net-content="lineItem.orderable.netContent"
-                        on-change-quantity="vm.quantityChanged(lineItem)"
-                        input-class="{'has-popover is-invalid': vm.validateOnPageChange()}"/>
+                <td>{{lineItem.lot.expirationDate | openlmisDate}}</td>
+                <td align="right">{{lineItem.stockOnHand}}</td>
+                <td class="digit-cell" >
+                    <input
+                        class="form-control" ng-blur="vm.validateQuantity(lineItem)"
+                        ng-class="{'has-popover is-invalid': vm.validateOnPageChange()}"
+                        ng-change="vm.quantityChanged(lineItem)"
+                        ng-model="lineItem.quantity"
+                        openlmis-invalid="{{lineItem.quantityInvalid ? lineItem.quantityInvalid : ''}}"
+                        positive-integer/>
                 </td>
                 <td ng-if="vm.showVVMStatusColumn" class="digit-cell">
                     <select ng-if="lineItem.orderable.extraData.useVVM == 'true'"
@@ -106,9 +114,7 @@
                         />
                 <td align="right"
                     ng-class="{'has-popover is-invalid': vm.validateOnPageChange()}"
-                    openlmis-invalid="{{lineItem.unaccountedQuantityInvalid | message}}">
-                    {{vm.recalculateQuantity(lineItem.unaccountedQuantity, lineItem.orderable.netContent)}}
-                </td>
+                    openlmis-invalid="{{lineItem.unaccountedQuantityInvalid | message}}">{{lineItem.unaccountedQuantity}}</td>
                 </td>
                 <td ng-if="vm.showHideButtonColumn">
                     <button type="button" class="danger" ng-if="lineItem.stockOnHand === 0 && lineItem.active && !lineItem.$isNewItem" ng-disabled="offlineService.isOffline()"
@@ -117,7 +123,8 @@
             </tr>
         </tbody>
     </table>
-    <openlmis-pagination list="vm.displayLineItemsGroup" paged-list="vm.pagedLineItems" on-page-change="vm.saveOnPageChange"></openlmis-pagination>
+    <openlmis-pagination ng-if="vm.stateParams.physicalInventoryType === 'Major'" list="vm.displayLineItemsGroup" paged-list="vm.pagedLineItems" on-page-change="vm.saveOnPageChange"></openlmis-pagination>
+
 </section>
 
 <ng-include src="'stock-physical-inventory-draft/physical-inventory-draft-toolbar.html'"></ng-include>
